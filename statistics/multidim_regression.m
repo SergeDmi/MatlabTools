@@ -1,12 +1,12 @@
-function [ linco,res ] = multidim_regression( Y,X,nimp )
-% [ linco,res ] = multidim_regression( Y,X,nimp )
+function [ linco, offset, res ] = multidim_regression( Y,X,nimp )
+% [ linco, offset, res ] = multidim_regression( Y,X,nimp )
 %   A function to do a linear regression of Y from nimp columns in X
 %
 % Y is the observable (vector N_experiments x 1)
 % X are the parameters (matrix N_experiments x N_params)
 %
 % linco are the linear coefficients
-% note that they are of the form ( Cste Coeff1 Coeff2 Coeff )
+% note that they are of the form ( Coeff1 Coeff2 Coeff3 ... )
 % 
 % Not suitable for anything, really
 % Serge Dmitrieff
@@ -67,6 +67,7 @@ end
 left_ix=logical(chosable);
 left=bli(left_ix);
 hist=zeros(1,nimp);
+res=zeros(1,nimp);
 YY=Y;
 
 
@@ -95,6 +96,7 @@ for ni=1:nimp
     M=X(:,vec);
     coefs=M\Y;
     YY=Y-M*coefs;
+    res(ni)=sum(abs(YY));
     % Updating variables we can still use
     left_ix(ix)=0;
     left_ix=logical(left_ix);
@@ -102,8 +104,8 @@ for ni=1:nimp
     nvx=sum(left_ix);
 end
     
-linco=coefs;
-res=sum(abs(YY));
+linco=coefs(2:end);
+offset=coefs(1);
 
 end
 
