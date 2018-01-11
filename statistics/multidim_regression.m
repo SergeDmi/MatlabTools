@@ -5,6 +5,7 @@ function [ linco, offset,  Rsq , hist] = multidim_regression( Y,X,nimp )
 %
 % Y is the observable (vector N_experiments x 1)
 % X are the parameters (matrix N_experiments x N_params)
+% nimp is the number of predictors to be taken from N_params
 %
 % linco are the linear coefficients
 % note that they are of the form ( Coeff1 Coeff2 Coeff3 ... )
