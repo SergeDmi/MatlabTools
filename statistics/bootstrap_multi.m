@@ -1,9 +1,12 @@
-function [MV, SV, MO, SO, Rsq,hist] = bootstrap_multi(Y,X, nimp, n_max, verbose)
+function [MV, SV, MO, SO, r2s,counts] = bootstrap_multi(Y,X, nimp, n_max, verbose)
 %function [MV, SV, MO, SO, Rsq,hist] = bootstrap_multi(PTS, n_max)
 %
 % gives the mean (MV) and std dev (SV) of linear coeffs obtained from PTS
 % gives the mean (MO) and std dev (SO) of y-offsets obtained from PTS
 % Slopes & offsets are calculated using least-square fitting (sorry no robust)
+% r2s is the predictive power of each parameter
+% counts is the number of times each parameter was used to predict
+%
 % Y is the observable (vector N_experiments x 1)
 % X are the parameters (matrix N_experiments x N_params)      
 % n_max is the number of bootstraped samples. Higher is better.
