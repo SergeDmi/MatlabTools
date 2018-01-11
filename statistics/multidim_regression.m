@@ -1,12 +1,16 @@
-function [ linco, offset, res ] = multidim_regression( Y,X,nimp )
+function [ linco, offset,  Rsq , hist] = multidim_regression( Y,X,nimp )
 % [ linco, offset, res ] = multidim_regression( Y,X,nimp )
 %   A function to do a linear regression of Y from nimp columns in X
+% 
 %
 % Y is the observable (vector N_experiments x 1)
 % X are the parameters (matrix N_experiments x N_params)
 %
 % linco are the linear coefficients
 % note that they are of the form ( Coeff1 Coeff2 Coeff3 ... )
+% offset is the constant offset
+% hist is the order of parameters used for regression
+% Rsq is the Rsq value after N steps
 % 
 % Not suitable for anything, really
 % Serge Dmitrieff
@@ -68,10 +72,15 @@ left_ix=logical(chosable);
 left=bli(left_ix);
 hist=zeros(1,nimp);
 res=zeros(1,nimp);
-YY=Y;
+
 
 
 %% Simple method
+% Removing mean 
+M=X(:,1);
+cte=M\Y;
+YY=Y-M*coefs;
+err0=sum(dy.^2);
 % We find the best to worse predictor in X
 for ni=1:nimp
     scores=ones(1,nvx);
@@ -82,7 +91,7 @@ for ni=1:nimp
         M=X(:,vec);
         coefs=M\YY;
         dy=YY-M*coefs;
-        scores(j)=sum(abs(dy));
+        scores(j)=sum(dy.^2);
         coeffs(:,j)=coefs;
     end
     
@@ -96,7 +105,7 @@ for ni=1:nimp
     M=X(:,vec);
     coefs=M\Y;
     YY=Y-M*coefs;
-    res(ni)=sum(abs(YY));
+    res(ni)=sum(YY.^2);
     % Updating variables we can still use
     left_ix(ix)=0;
     left_ix=logical(left_ix);
@@ -106,6 +115,7 @@ end
     
 linco=coefs(2:end);
 offset=coefs(1);
+Rsq=1-res/err0;
 
 end
 
