@@ -79,8 +79,8 @@ res=zeros(1,nimp);
 % Removing mean 
 M=X(:,1);
 cte=M\Y;
-YY=Y-M*coefs;
-err0=sum(dy.^2);
+YY=Y-M*cte;
+err0=sum(YY.^2);
 % We find the best to worse predictor in X
 for ni=1:nimp
     scores=ones(1,nvx);
@@ -116,6 +116,7 @@ end
 linco=coefs(2:end);
 offset=coefs(1);
 Rsq=1-res/err0;
+hist=hist-1;
 
 end
 
