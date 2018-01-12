@@ -9,7 +9,6 @@ function [ slope, off, score ] = ortho_robust_slope(PTS, verbose)
 % slope is the slope, off the offset
 % 
 % after F. Nédélec's ortho_robus_fit
-% after Serge Dmitrieff's ortho_robust_coeff2
 % S. Dmitrieff 10/01/2018
 % www.biophysics.fr
 
