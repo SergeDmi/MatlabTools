@@ -1,4 +1,4 @@
-function [mv, sv, mo, so, slopes,offsets] = bootstrap_robust(PTS, n_max, verbose)
+function [mv, sv, mo, so, slopes,offsets] = bootstrap_robust(Y,X, n_max, verbose)
 %function [mv, sv,slo] = bootstrap_robust(PTS, n_max)
 %
 % gives the mean (mv) and std dev (sv) of slopes obtained from PTS
@@ -18,27 +18,21 @@ if nargin < 3
     verbose = 0;
 end
 
-
-if size(PTS,1) == 2;
-    % This fails if PTS is 2x2.
-    % If you do a bootstrap on 2x2 array, you deserve failure anyway
-    %         (much more than if your data has the wrong orientation)
-    PTS = PTS';
+if size(X,1) == 1
+    X = X';
 end
 
-i_max = size(PTS, 1);
+if size(Y,1) == 1
+    Y = Y';
+end
+
+
+i_max = size(Y, 1);
 slopes = zeros(1, n_max);
 offsets = zeros(1, n_max);
 for n = 1 : n_max
     i = randi(i_max, i_max, 1);
-    % Slower but more precise :
-    [slopes(n),offsets(n)] = ortho_robust_slope(PTS(i, :));
-    % Faster but worse for small number of pts :
-    %[slopes(n),offsets(n)] = ortho_robust_coeff2(PTS(i, :)');
-    % For comparison : linear fit
-    %p=polyfit(PTS(i,1),PTS(i,2),1);
-    %slopes(n)=p(1);
-    %offsets(n)=p(2);
+    [slopes(n),offsets(n)] = ortho_robust_slope(Y(i),X(i));
 end
 
 mv = mean(slopes);
@@ -47,23 +41,26 @@ sv = std(slopes);
 mo = mean(offsets);
 so = std(offsets);
 
-if verbose
-    figure
-    % Histogram of slope values
-    h=histogram(slopes, 32);
-    hm=max(h.Values);
-    xlabel('Slope');
-    ylabel('Histogram count');
-    hold all
-    % mean slope +/- stdev
-    plot([mv mv],[0 hm],'b','LineWidth',3)
-    plot([mv-sv mv-sv],[0 hm],'r','LineWidth',2)
-    plot([mv+sv mv+sv],[0 hm],'r','LineWidth',2)
-    
-    figure
-    scatter(PTS(:,1),PTS(:,2))
-    hold all
-    plot([min(PTS(:,1)) max(PTS(:,1))],[min(PTS(:,1)) max(PTS(:,1))]*mv+mo,'b')
+if verbose>0
+	figure
+	scatter(X,Y)
+	hold all
+	plot([min(X) max(X)],[min(X) max(X)]*mv+mo,'r')
+	
+    if verbose>1
+        figure
+		% Histogram of slope values
+		h=histogram(slopes, 32);
+		hm=max(h.Values);
+		xlabel('Slope');
+		ylabel('Histogram count');
+		hold all
+		% mean slope +/- stdev
+		plot([mv mv],[0 hm],'b','LineWidth',3)
+		plot([mv-sv mv-sv],[0 hm],'r','LineWidth',2)
+		plot([mv+sv mv+sv],[0 hm],'r','LineWidth',2)
+    end
+  
 end
 
 end
