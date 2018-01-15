@@ -32,9 +32,9 @@ end
         a = cen + x(2) * [-d(2), d(1)];
         h = ( PTS(:,1) - a(1) )*d(2) - ( PTS(:,2) - a(2) )*d(1);
         % robust fitting:
-        res = sum(abs(h));
+        %res = sum(abs(h));
         % for standard fitting, use this:
-        % res = sum(h.^2);
+         res = sum(h.^2);
     end
 
 [coef, score] = fminsearch(@residual, [0,0]);
