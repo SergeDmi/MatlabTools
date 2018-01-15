@@ -1,5 +1,5 @@
 function [ linco, offset,  Rsq , hist] = multidim_orthogonal( Y,X,nimp )
-NOT WORKING
+	STILL NOT WORKING
 % [ linco, offset, res ] = multidim_orthognal( Y,X,nimp )
 %   USES PCA to do a robus regression of Y from nimp columns in X
 % 
@@ -47,15 +47,7 @@ for i=1:nx
 	rangex=max(X(:,i))-min(X(:,i));
     if rangex==0
         chosable(i)=0;
-    else
-        if 0
-            % this is if you want to renormalize your data
-            % warning, you should also renormalize slopes afterwards
-            factors(i)=rangex;
-            offsets(1,i)=mean(X(:,i));
-            X(:,i)=X(:,i)-offsets(1,i);
-            X(:,i)=X(:,i)/rangex;
-        end
+		%else
     end
 end
 
@@ -65,7 +57,7 @@ bli=1:nx;
         
 if nimp>nvx
     nimp=nvx;
-    disp('Warning : change predictor number to variable number')
+    disp('Warning : changing predictor number to variable number')
 end       
 
 
@@ -86,28 +78,22 @@ err0=sum(YY.^2);
 % We find the best to worse predictor in X
 for ni=1:nimp
     scores=ones(1,nvx);
-    coeffs=ones(2,nvx);
+    coeffs=zeros(ni+1,ni+1,nvx);
     
     for j=1:sum(left_ix)
-        vec=[1 left(j)];
-        M=X(:,vec);
-        coefs=M\YY;
-        dy=YY-M*coefs;
-        scores(j)=sum(dy.^2);
-        coeffs(:,j)=coefs;
+        vec=[hist left(j)];
+        M=[Y X(:,vec)]s;
+        %coefs=M\YY;
+		[coefs,~,latent]=princom(M);
+        scores(j)=latent(end);
+        coeffs(:,:,j)=coefs;
     end
     
     [~,rk]=min(scores);
     ix=left(rk);
     % The next best predictor is #ix
     hist(ni)=ix;
-    % We recompute the fitting error 
-    % This should result in better fitting but is slower
-    vec=[1 hist(1:ni)];
-    M=X(:,vec);
-    coefs=M\Y;
-    YY=Y-M*coefs;
-    res(ni)=sum(YY.^2);
+	res(ni)=scores(rk);
     % Updating variables we can still use
     left_ix(ix)=0;
     left_ix=logical(left_ix);
@@ -115,6 +101,7 @@ for ni=1:nimp
     nvx=sum(left_ix);
 end
     
+	
 linco=coefs(2:end);
 offset=coefs(1);
 Rsq=1-res/err0;
