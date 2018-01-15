@@ -17,7 +17,8 @@ else
 end
 
 d=1;
-% we try to add a vector 
+% we try to add a vector to M to compute adoint matrix
+% the added vector should complete the base
 xprod=get_xprod(M,N,d);
 while sum(isnan(xprod)) && d<N
     d=d+1;
