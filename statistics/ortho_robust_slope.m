@@ -1,43 +1,39 @@
-function [ slope, off, score ] = ortho_robust_slope(PTS, verbose)
+function [ slope, off, score ] = ortho_robust_slope(Y,X, verbose)
 %function [ fit, score ] = ortho_robust_fit(PTS, verbose)
 %
 % give the slope of the line fitting the cloud of points PTS
-% PTS is as vector:
+% X and Y are as vector:
 %   x1 x2 x3 ... xn
 %   y1 y2 y3 ... yn   (or in the other direction)
 % Uses robust orthogonal fitting
 % slope is the slope, off the offset
 % 
 % after F. Nédélec's ortho_robus_fit
-% after Serge Dmitrieff's ortho_robust_coeff2
 % S. Dmitrieff 10/01/2018
 % www.biophysics.fr
 
-if nargin < 2
+if nargin < 3
     verbose = 0;
 end
 
-if size(PTS,1) == 2;
-    PTS = PTS';
+if size(X,1) == 1;
+    X = X';
 end
 
+if size(Y,1) == 1;
+    Y = Y';
+end
+
+PTS=[X Y];
 cen = mean(PTS, 1);
 
 if numel(cen) ~= 2
     error('unexpected argument size');
 end
 
-    function res = residual(x)
-        d = [cos(x(1)), sin(x(1))];
-        a = cen + x(2) * [-d(2), d(1)];
-        h = ( PTS(:,1) - a(1) )*d(2) - ( PTS(:,2) - a(2) )*d(1);
-        % robust fitting:
-        %res = sum(abs(h));
-        % for standard fitting, use this:
-         res = sum(h.^2);
-    end
+    
 
-[coef, score] = fminsearch(@residual, [0,0]);
+[coef, score] = fminsearch(@(x)residual(x,PTS,cen),[0,0]);
 
 angle = coef(1);
 offset = coef(2);
@@ -115,5 +111,14 @@ end
 
 end
 
+function res = residual(x,PTS,cen)
+    d = [cos(x(1)), sin(x(1))];
+    a = cen + x(2) * [-d(2), d(1)];
+    h = ( PTS(:,1) - a(1) )*d(2) - ( PTS(:,2) - a(2) )*d(1);
+    % robust fitting:
+    res = sum(abs(h));
+    % for standard fitting, use this:
+    % res = sum(h.^2);
+end
 
 
