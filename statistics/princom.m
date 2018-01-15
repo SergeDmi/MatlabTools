@@ -126,7 +126,8 @@ else
         if n > 1  
             q = sum(sigma > max(n,p).*eps(sigma(1)));  
             if q < r  
-                warning(message('stats:princomp:colRankDefX', q));  
+                %warning(message('stats:princomp:colRankDefX', q));  
+                warning('some warning');
             end  
         else  
             q = 0;  
