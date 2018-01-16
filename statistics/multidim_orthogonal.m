@@ -33,6 +33,7 @@ if S(2)==ny
     S=S(2:-1:1);
 end
 nx=S(2)+1;
+[X,CX]=nono(X);
 X=[Y X];
 
 
@@ -83,6 +84,7 @@ for ni=1:nimp
         %coefs=M\YY;
 		[~,~,latent]=princom(M);
         scores(j)=latent(end);
+        %scores(j)=-sum(sc2);
     end
     
     [~,rk]=min(scores);
@@ -100,8 +102,9 @@ end
  M=X(:,vec);
 [coefs]=princom(M);
 
+
 [xprod]=ndim_xprod(coefs(:,1:ni));
-linco=-xprod(2:end)/xprod(1);
+linco=-(xprod(2:end)./CX(:))/xprod(1);
 
 %coefs(:,1:ni)
 	
@@ -112,3 +115,11 @@ hist=hist(2:end)-1;
 
 end
 
+function [X,cof] = nono(X)
+    s=size(X);
+    b=ones(s(1),1);
+    size(b*mean(X,1))
+    X=X-b*mean(X,1);
+    cof=var(X,1);
+    X=X./(b*cof);
+end
