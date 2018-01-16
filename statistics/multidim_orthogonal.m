@@ -1,5 +1,4 @@
 function [ linco, offset,  Rsq , hist] = multidim_orthogonal( Y,X,nimp )
-	STILL NOT WORKING
 % [ linco, offset, res ] = multidim_orthognal( Y,X,nimp )
 %   USES PCA to do a robus regression of Y from nimp columns in X
 % 
@@ -34,22 +33,23 @@ if S(2)==ny
     S=S(2:-1:1);
 end
 nx=S(2)+1;
-X=[ones(ny,1) X];
+X=[Y X];
 
 
 %% Preparing the data
 chosable=ones(1,nx);
-
+chosable(1)=0;
 %factors=ones(1,nx);
 %offsets=ones(1,nx);
 
-for i=1:nx
+for i=2:nx
 	rangex=max(X(:,i))-min(X(:,i));
     if rangex==0
         chosable(i)=0;
 		%else
     end
 end
+
 
 nvx=sum(chosable);
 bli=1:nx;
@@ -64,35 +64,31 @@ end
 
 left_ix=logical(chosable);
 left=bli(left_ix);
-hist=zeros(1,nimp);
+hist=[1];
 res=zeros(1,nimp);
 
 
 
 %% Simple method
 % Removing mean 
-M=X(:,1);
-cte=M\Y;
-YY=Y-M*cte;
-err0=sum(YY.^2);
+
 % We find the best to worse predictor in X
 for ni=1:nimp
     scores=ones(1,nvx);
-    coeffs=zeros(ni+1,ni+1,nvx);
+    
     
     for j=1:sum(left_ix)
         vec=[hist left(j)];
-        M=[Y X(:,vec)]s;
+        M=X(:,vec);
         %coefs=M\YY;
-		[coefs,~,latent]=princom(M);
+		[~,~,latent]=princom(M);
         scores(j)=latent(end);
-        coeffs(:,:,j)=coefs;
     end
     
     [~,rk]=min(scores);
     ix=left(rk);
     % The next best predictor is #ix
-    hist(ni)=ix;
+    hist=[hist ix];
 	res(ni)=scores(rk);
     % Updating variables we can still use
     left_ix(ix)=0;
@@ -101,11 +97,18 @@ for ni=1:nimp
     nvx=sum(left_ix);
 end
     
+ M=X(:,vec);
+[coefs]=princom(M);
+
+[xprod]=ndim_xprod(coefs(:,1:ni));
+linco=-xprod(2:end)/xprod(1);
+
+%coefs(:,1:ni)
 	
-linco=coefs(2:end);
+%linco=coefs(2:end);
 offset=coefs(1);
-Rsq=1-res/err0;
-hist=hist-1;
+Rsq=1-res;
+hist=hist(2:end)-1;
 
 end
 
