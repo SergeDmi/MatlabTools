@@ -5,6 +5,7 @@ function [xprod]=ndim_xprod(M)
 % Serge Dmitrieff, IJM 2018
 % www.biophysics.fr
 
+%% Checking input format
 sm=size(M);
 if sm(2)==sm(1)-1
     M=M';
@@ -16,9 +17,11 @@ else
     error('Input matrix size should be N x (N-1) ');
 end
 
-d=1;
+
+%% Actual computation
 % we try to add a vector to M to compute adoint matrix
 % the added vector should complete the base
+d=1;
 xprod=get_xprod(M,N,d);
 while sum(isnan(xprod)) && d<N
     d=d+1;
