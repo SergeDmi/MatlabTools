@@ -17,7 +17,7 @@ function [ lincoeffs, offset,  Rsq , hist] = multidim_orthogonal( Y,X,nimp )
 % Serge Dmitrieff 2018
 % www.biophysics.fr
 
-%% Checking input
+%% Checking input.
 S=size(Y);
 if min(S)>1
     error('Now limited to 1 measured output')
@@ -34,14 +34,15 @@ if S(2)==ny
     S=S(2:-1:1);
 end
 nx=S(2)+1;
-[XX,CX]=nono(X);
-XX=[Y XX];
+XX=[Y X];
+[XX,CX]=nono(XX);
+
 varY=var(Y);
 
 %% Preparing the data
 chosable=ones(1,nx);
 chosable(1)=0;
-chosable(2:end)=CX>0;
+chosable(2:end)=CX(2:end)>0;
 
 nvx=sum(chosable);
 bli=1:nx;
@@ -83,24 +84,41 @@ for ni=1:nimp
     nvx=sum(left_ix);
 end
     
+
  M=XX(:,hist);
  % Back to computing CPA
-[coefs]=princom(M);
+[coefs,PP,latent]=princom(M);
 % Computing normal vector to main plane and getting linear coeffcients
-%linco=-(xprod(2:end)./CX(hist)')/xprod(1);
 [xprod]=ndim_xprod(coefs(:,1:ni));
 linco=-xprod(2:end)/xprod(1);
 % Back to real coefficients by inverting normalization
 hist=(hist(2:end)-1);
-linco=linco'./CX(hist);
+linco=CX(1)*linco'./CX(hist+1);
 lincoeffs=zeros(1,nx-1);
 lincoeffs(hist)=linco;
-errs=Y-sum((ones(ny,1)*(lincoeffs)).*X,2);
+%normdv=xprod./sqrt(sum(xprod(:).^2));
+%normdv=xprod;
+%err=latent(end)*sqrt(sum(xprod.*(CX(1:(ni+1)).^2)'));
+%normdv=normdv.*CX(1:(ni+1))';
+%allvecs=PP(:,end)*normdv';
+%pp=PP;
+%pp(:,1)=0;
+%ppp=pp*inv(coefs);
+
+%allvecs(:,1)=ppp(:,2)*CX(2);
+%allvecs(:,2)=ppp(:,1)*CX(1);
+
+predY=sum((ones(ny,1)*(lincoeffs)).*X,2);
+predY=predY-mean(predY)+mean(Y);
+errs=Y-predY;
 offset=mean(errs);
+
+
 %Rsq(nimp)=1-(devY-std(errs))/devY;
 % Computing the Rsquared
 Rsq=(varY-var(errs))/varY;
 
+%scatter(XX(:,2)*CX(2),XX(:,1)*CX(1));
 %rest=mean(Y)-sum(mean(X,1).*linco);
 %offset=coefs(1);
 

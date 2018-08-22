@@ -1,4 +1,4 @@
-function [mv, sv, mo, so, slopes,offsets] = bootstrap_robust(Y,X, n_max, verbose)
+function [mv, sv, mo, so, mr,sr,slopes,offsets,rsqs] = bootstrap_robust(Y,X, n_max, verbose)
 %function [mv, sv,slo] = bootstrap_robust(PTS, n_max)
 %
 % gives the mean (mv) and std dev (sv) of slopes obtained from PTS
@@ -13,8 +13,11 @@ function [mv, sv, mo, so, slopes,offsets] = bootstrap_robust(Y,X, n_max, verbose
 % Serge Dmitrieff - 10/01/2018
 % www.biophysics.fr
 
-
 if nargin < 3
+	n_max=max(size(Y))*10;
+end
+
+if nargin < 4
     verbose = 0;
 end
 
@@ -30,9 +33,10 @@ end
 i_max = size(Y, 1);
 slopes = zeros(1, n_max);
 offsets = zeros(1, n_max);
+rsqs = zeros(1, n_max);
 for n = 1 : n_max
     i = randi(i_max, i_max, 1);
-    [slopes(n),offsets(n)] = ortho_robust_slope(Y(i),X(i));
+    [slopes(n),offsets(n),~ ,rsqs(n)] = ortho_robust_slope(Y(i),X(i));
 end
 
 mv = mean(slopes);
@@ -40,6 +44,9 @@ sv = std(slopes);
 
 mo = mean(offsets);
 so = std(offsets);
+
+mr=mean(rsqs);
+sr=std(rsqs);
 
 if verbose>0
 	figure

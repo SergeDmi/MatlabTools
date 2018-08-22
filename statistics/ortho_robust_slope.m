@@ -1,4 +1,4 @@
-function [ slope, off, score ] = ortho_robust_slope(Y,X, verbose)
+function [ slope, off, score,rsq ] = ortho_robust_slope(Y,X, verbose)
 %function [ fit, score ] = ortho_robust_fit(PTS, verbose)
 %
 % give the slope of the line fitting the cloud of points PTS
@@ -16,11 +16,11 @@ if nargin < 3
     verbose = 0;
 end
 
-if size(X,1) == 1;
+if size(X,1) == 1
     X = X';
 end
 
-if size(Y,1) == 1;
+if size(Y,1) == 1
     Y = Y';
 end
 
@@ -31,7 +31,7 @@ if numel(cen) ~= 2
     error('unexpected argument size');
 end
 
-    
+score0=residual([0,0],PTS,cen);    
 
 [coef, score] = fminsearch(@(x)residual(x,PTS,cen),[0,0]);
 
@@ -46,27 +46,32 @@ slope=tan(angle);
 off=ori(2)-ori(1)*slope;
 %fit = [angle, ori(1), ori(2) ];
 
+rsq=(score0-score)/score0;
 if verbose > 0
     
-    figure('Position', [20 20 768 768]);
+    %figure('Position', [20 20 768 768]);
+	figure
     plot(PTS(:,1), PTS(:,2), 'o');
-    hold on;
-    plot(cen(1), cen(2), 'ko', 'MarkerSize', 16);
+    hold all;
+	plot(cen(1), cen(2), 'ro', 'MarkerSize', 4);
+	%plot(ori(1), ori(2), 'ko', 'MarkerSize', 16);
     axis equal
-    xlim([-1.0 4]);
-    ylim([-3.5 1.5]);
+    %xlim([-1.0 4]);
+    %ylim([-3.5 1.5]);
 
     dif = max(PTS, [], 1) - min(PTS, [], 1);
     len = sqrt(sum(dif.^2)) / 2;
     
     % plot best line fit
     lin = vertcat(ori - len * dir, ori + len * dir);
-    plot(lin(:,1), lin(:,2), '-', 'LineWidth', 2);
+    %plot(lin(:,1), lin(:,2), '-', 'LineWidth', 2);
     
     % plot line fit going through the center:
     lin = vertcat(cen - len * dir, cen + len * dir);
     plot(lin(:,1), lin(:,2), '--', 'LineWidth', 2);
    
+	
+	figure
     % plot linear regression
     %poly = polyfit(PTS(:,1), PTS(:,2), 1);
     %val = [min(PTS(:,1)) max(PTS(:,1))];
@@ -76,19 +81,19 @@ if verbose > 0
     val = 0:0.01:pi;
     res = zeros(size(val));
     for i = 1:length(val)
-        res(i) = residual([val(i), 0]);
+        res(i) = residual([val(i), offset],PTS,cen);
     end
-    axes('Position', [0.06 0.825 0.2 0.15]);
+    %axes('Position', [0.06 0.825 0.2 0.15]);
     plot(val, res);
     xlim([0 pi]);
     xlabel('Angle (radian)');
     ylabel('Residual');
 
     % plot residual as a function of the offset
-    val = -1:0.01:1;
+    val = (-1:0.01:1)*offset+offset;
     res = zeros(size(val));
     for i = 1:length(val)
-        res(i) = residual([angle, val(i)]);
+        res(i) = residual([angle, val(i)],PTS,cen);
     end
     axes('Position', [0.06 0.625 0.2 0.15]);
     plot(val, res);
