@@ -1,4 +1,4 @@
-function [ y_fit , y_std ] = rolling_average( Y,X,dist,x_fit)
+function [ y_fit , y_std , x_new ] = rolling_average( Y,X,dist,x_fit)
 %ROLLING_AVERAGE Performs a rolling average
 %   Gives y_fit corresponding to bins x_fit from data Y,X 
 %   with a haracteristic distance dist
@@ -13,6 +13,7 @@ function [ y_fit , y_std ] = rolling_average( Y,X,dist,x_fit)
 % OUTPUT
 %   y_fit is the averaged Y
 %   y_std is the standard deviation
+%   x_new is the actual vector of x from the moving average
 %
 % @TODO : add function handle as input parameter
 %
@@ -36,6 +37,7 @@ end
 
 nY=sY(2);
 y_fit=zeros(nf,nY);
+y_fit=zeros(nf, 1);
 y_std=zeros(nf,nY);
 
 ro=ones(1,nf);
@@ -43,14 +45,14 @@ XX=X*ro;
 col=ones(sX,1);
 weights=exp(-((XX-col*x_fit).^2)./(2*dist*dist));
 
+x_new(:)=sum( (XX.*weights),1 )./sum( weights,1);
+
 for i=1:nY
 	% Making matrixes rather than loops
 	YY=Y(:,i)*ro;
 	% 3,2,1, let's jam
 	y_fit(:,i)=sum( (YY.*weights),1 )./sum( weights,1);
-	
 	y_std(:,i)=sqrt(sum( ((YY-col*(y_fit(:,i)')).^2).*weights,1)./sum(weights,1)); 
-	
 end
 % That was fast !
 
